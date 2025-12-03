@@ -170,7 +170,7 @@ class AbstractEnv(gym.Env):
         """
         raise NotImplementedError
 
-    def reset(self, is_training=True, testing_seeds=0, num_CAV=0) -> Observation:
+    def reset(self, is_training=True, testing_seeds=0, num_CAV=0) -> [Observation, dict]:
         """
         Reset the environment to it's initial configuration
 
@@ -203,7 +203,7 @@ class AbstractEnv(gym.Env):
                     available_actions[i][a] = 1
         else:
             available_actions = [[1] * self.n_a] * len(self.controlled_vehicles)
-        return np.asarray(obs).reshape((len(obs), -1)), np.array(available_actions)
+        return np.asarray(obs).reshape((len(obs), -1)), {"action_mask": np.array(available_actions)}
 
     def _reset(self, num_CAV=1) -> None:
         """

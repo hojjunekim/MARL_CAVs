@@ -107,7 +107,16 @@ class MAPPO:
         self.n_agents = len(self.env.controlled_vehicles)
         # take n steps
         for i in range(self.roll_out_n_steps):
-            states.append(self.env_state)
+            current_states_list = []
+            for agent_state in self.env_state:
+                # Convert to NumPy array, flatten it (to 25 features), and convert back to list
+                # This ensures every state saved is a uniform 1D list.
+                # Use float32/64 to match expected data types.
+                agent_state_flat = np.array(agent_state, dtype=np.float32).flatten().tolist()
+                current_states_list.append(agent_state_flat)
+
+            # 2. Append the consistent, flattened list of all agents' states for this timestep
+            states.append(current_states_list)
             action = self.exploration_action(self.env_state, self.n_agents)
             next_state, global_reward, done, info = self.env.step(tuple(action))
             actions.append([index_to_one_hot(a, self.action_dim) for a in action])
