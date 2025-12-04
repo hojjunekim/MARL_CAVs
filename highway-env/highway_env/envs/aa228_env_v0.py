@@ -37,14 +37,14 @@ class RoundaboutEnv(AbstractEnv):
             "controlled_vehicles": 1,
             "screen_width": 600,
             "screen_height": 600, # Increased size for roundabouts
-            "centering_position": [2.0, 0.5],
+            "centering_position": [2.05, 0.5],
             "simulation_frequency": 15,
             "duration": 40, # Longer duration for a continuous flow
             "policy_frequency": 5,
-            "reward_speed_range": [8, 15],
+            "reward_speed_range": [0, 15],
             "COLLISION_REWARD": 200,
-            "HIGH_SPEED_REWARD": 1,
-            "INCENTIVE_REWARD": 0.5, # New reward for staying on the road/progress
+            "HIGH_SPEED_REWARD": 1.0, # 1,
+            "INCENTIVE_REWARD": 0.5, # 0.5, # New reward for staying on the road/progress
             "scaling": 3,
         })
         return config
@@ -398,7 +398,7 @@ class RoundaboutEnv(AbstractEnv):
         
         # --- 3. Other (HDV) Spawning ---
         # Spawn HDVs on different lanes or with different spacing
-        num_HDV = 5 
+        num_HDV = 0
         for i in range(num_HDV):
             # Use a different lane for HDVs or just continue the cycle
             lane_index = entry_lanes[i % len(entry_lanes)]
@@ -432,7 +432,7 @@ class RoundaboutEnvMARL(RoundaboutEnv):
                 "observation_config": {
                     "type": "Kinematics"
                 }},
-            "controlled_vehicles": 4 # Example: control 4 vehicles
+            "controlled_vehicles": 8 # Example: control 8 vehicles
         })
         return config
 

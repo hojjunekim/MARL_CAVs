@@ -166,21 +166,44 @@ def train(args):
         mappo.interact()
         if mappo.n_episodes >= EPISODES_BEFORE_TRAIN:
             mappo.train()
-        if mappo.episode_done and ((mappo.n_episodes + 1) % EVAL_INTERVAL == 0):
-            rewards, _, _, _ = mappo.evaluation(env_eval, dirs['train_videos'], EVAL_EPISODES)
-            rewards_mu, rewards_std = agg_double_list(rewards)
-            print("Episode %d, Average Reward %.2f" % (mappo.n_episodes + 1, rewards_mu))
-            eval_rewards.append(rewards_mu)
-            
-            # Log Evaluation Metrics to W&B
+        if mappo.episode_done:
+            # Compute training statistics (exclude current in-progress episode stored as last entry)
+            completed_rewards = mappo.episode_rewards[:-1]
+            completed_lengths = mappo.epoch_steps[:-1]
+            window = min(100, max(0, len(completed_rewards)))
+            if window > 0:
+                recent_rewards = completed_rewards[-window:]
+                recent_lengths = completed_lengths[-window:]
+                train_reward_mean = float(np.mean(recent_rewards))
+                train_length_mean = float(np.mean(recent_lengths))
+            else:
+                train_reward_mean = float(completed_rewards[-1]) if len(completed_rewards) > 0 else 0.0
+                train_length_mean = float(completed_lengths[-1]) if len(completed_lengths) > 0 else 0.0
+
+            # Log training metrics to W&B
             wandb.log({
-                "Episode": mappo.n_episodes + 1,
-                "Average_Evaluation_Reward": rewards_mu,
-                "Reward_Std": rewards_std,
+                "Episode": mappo.n_episodes,
+                "Training_Reward_Mean": train_reward_mean,
+                "Training_Episode_Length_Mean": train_length_mean,
+                "Last_Episode_Reward": float(completed_rewards[-1]) if len(completed_rewards) > 0 else 0.0,
+                "Last_Episode_Length": float(completed_lengths[-1]) if len(completed_lengths) > 0 else 0.0,
             })
-            
-            # save the model
-            mappo.save(dirs['models'], mappo.n_episodes + 1)
+
+            # Run periodic evaluation (keeps previous behavior)
+            if ((mappo.n_episodes + 1) % EVAL_INTERVAL == 0):
+                rewards, _, _, _ = mappo.evaluation(env_eval, dirs['train_videos'], EVAL_EPISODES)
+                rewards_mu, rewards_std = agg_double_list(rewards)
+                print("Episode %d, Average Reward %.2f" % (mappo.n_episodes + 1, rewards_mu))
+                eval_rewards.append(rewards_mu)
+                # Log Evaluation Metrics to W&B
+                wandb.log({
+                    "Episode": mappo.n_episodes + 1,
+                    "Average_Evaluation_Reward": rewards_mu,
+                    "Reward_Std": rewards_std,
+                })
+
+                # save the model
+                mappo.save(dirs['models'], mappo.n_episodes + 1)
 
     # save the model
     mappo.save(dirs['models'], MAX_EPISODES + 2)
