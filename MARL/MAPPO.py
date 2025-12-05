@@ -137,18 +137,19 @@ class MAPPO:
                 break
 
         # discount reward
-        if done:
-            final_value = [0.0] * self.n_agents
-            self.n_episodes += 1
-            self.episode_done = True
-            self.episode_rewards.append(0)
-            self.average_speed[-1] = average_speed / self.epoch_steps[-1]
-            self.average_speed.append(0)
-            self.epoch_steps.append(0)
-        else:
-            self.episode_done = False
-            final_action = self.action(final_state)
-            final_value = self.value(final_state, final_action)
+        # if done:
+        final_value = [0.0] * self.n_agents
+        self.n_episodes += 1
+        self.episode_done = True
+        self.episode_rewards.append(0)
+        self.average_speed[-1] = average_speed / self.epoch_steps[-1]
+        self.average_speed.append(0)
+        self.epoch_steps.append(0)
+        # else:
+        #     self.episode_done = False
+
+        #     final_action = self.action(final_state, self.n_agents)
+        #     final_value = self.value(final_state, final_action)
 
         if self.reward_scale > 0:
             rewards = np.array(rewards) / self.reward_scale

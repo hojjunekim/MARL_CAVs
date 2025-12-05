@@ -43,8 +43,8 @@ class RoundaboutEnv(AbstractEnv):
             "policy_frequency": 5,
             "reward_speed_range": [0, 15],
             "COLLISION_REWARD": 200,
-            "HIGH_SPEED_REWARD": 1.0, # 1,
-            "INCENTIVE_REWARD": 0.5, # 0.5, # New reward for staying on the road/progress
+            "HIGH_SPEED_REWARD": 0.0,
+            "INCENTIVE_REWARD": 0.5, # New reward for staying on the road/progress
             "scaling": 3,
         })
         return config
@@ -375,6 +375,7 @@ class RoundaboutEnv(AbstractEnv):
         
         # --- 2. Multi-Agent (CAV) Spawning ---
         num_controlled = self.config.get("controlled_vehicles", num_CAV)
+        print(f"Spawning {num_controlled} controlled vehicles (CAVs).")
         
         # Determine the spacing for initial vehicle placement
         initial_spacing = 15  # [m] spacing between spawned vehicles on the same access road
@@ -394,7 +395,7 @@ class RoundaboutEnv(AbstractEnv):
             self.controlled_vehicles.append(ego_vehicle)
             road.vehicles.append(ego_vehicle)
 
-        self.vehicle = self.controlled_vehicles[0]  # For compatibility with base class
+        # self.vehicle = self.controlled_vehicles[0]  # For compatibility with base class
         
         # --- 3. Other (HDV) Spawning ---
         # Spawn HDVs on different lanes or with different spacing
